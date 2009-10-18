@@ -4,6 +4,15 @@ import socket
 import time
 import urllib
 
+# Get simplejson, one way or another
+try:
+    import simplejson
+except ImportError:
+    try:
+        import json as simplejson
+    except ImportError:
+        from django.utils import simplejson
+
 VAR_MAP = {
     'sender_uid': 's',
     'recipient_uids': 'r',
@@ -120,6 +129,56 @@ class Kontagent(object):
     def revenue_tracking(self, sender_uid, value):
         return self._request('mtu', locals())
     
+    def get_campaigns(self):
+        ts = str(time.time() * 1e6)
+        kt_sig = hashlib.md5('AB_TEST' + ts + self.secret_key).hexdigest()
+        qs = urllib.urlencode({'ts': ts, 'kt_sig': kt_sig})
+        path = '/abtest/campaigns/%s/?%s' % (self.api_key, qs)
+        try:
+            conn = httplib.HTTPConnection('www.kontagent.com')
+            conn.request('GET', path)
+            response = conn.getresponse().read()
+        except (socket.error, httplib.HTTPException, ValueError):
+            raise KontagentError('Error in sending request')
+        try:
+            decoded = simplejson.loads(response)
+        except ValueError:
+            raise KontagentError('Unable to decode response')
+        sig = []
+        for key in sorted(decoded.keys()):
+            if key == 'sig':
+                continue
+            sig.extend((key, '=', simplejson.dumps(decoded[key].replace(' ', ''))))
+        sig = hashlib.md5(''.join(sig) + self.secret_key).hexdigest()
+        if sig != decoded['sig']:
+            raise KontagentError('Kontagent response fails checksum validation')
+        return decoded
+    
+    def get_campaign(self, campaign_name):
+        ts = str(time.time() * 1e6)
+        kt_sig = hashlib.md5('AB_TEST' + ts + self.secret_key).hexdigest()
+        qs = urllib.urlencode({'ts': ts, 'kt_sig': kt_sig})
+        path = '/abtest/campaigns/%s/%s/?%s' % (self.api_key, campaign_name, qs)
+        try:
+            conn = httplib.HTTPConnection('www.kontagent.com')
+            conn.request('GET', path)
+            response = conn.getresponse().read()
+        except (socket.error, httplib.HTTPException, ValueError):
+            raise KontagentError('Error in sending request')
+        try:
+            decoded = simplejson.loads(response)
+        except ValueError:
+            raise KontagentError('Unable to decode response')
+        sig = []
+        for key in sorted(decoded.keys()):
+            if key == 'sig':
+                continue
+            sig.extend((key, '=', simplejson.dumps(decoded[key].replace(' ', ''))))
+        sig = hashlib.md5(''.join(sig) + self.secret_key).hexdigest()
+        if sig != decoded['sig']:
+            raise KontagentError('Kontagent response fails checksum validation')
+        return decoded
+    
     def _request(self, msg_type, data):
         path = self._get_path(msg_type)
         qs = self._get_qs(data)
@@ -155,10 +214,10 @@ class Kontagent(object):
             data[VAR_MAP.get(key, key)] = val
         # Now we add a timestamp
         data['ts'] = str(time.time() * 1e6)
-        # FInally we build up a signature and sign it
+        # Finally we build up a signature and sign it
         sig = []
         for key in sorted(data.keys()):
-            sig.extend((key, '=', data.get(key)))
+            sig.extend((key, '=', data.get(key).replace(' ', '')))
         sig.append(self.secret_key)
         data['an_sig'] = hashlib.md5(''.join(sig)).hexdigest()
         # URL-Encode the parameters and return the value
