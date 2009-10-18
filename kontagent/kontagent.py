@@ -129,39 +129,16 @@ class Kontagent(object):
     def revenue_tracking(self, sender_uid, value):
         return self._request('mtu', locals())
     
-    def get_campaigns(self):
+    def get_campaigns(self, campaign_name=None):
         ts = str(time.time() * 1e6)
         kt_sig = hashlib.md5('AB_TEST' + ts + self.secret_key).hexdigest()
         qs = urllib.urlencode({'ts': ts, 'kt_sig': kt_sig})
-        path = '/abtest/campaigns/%s/?%s' % (self.api_key, qs)
+        path = '/abtest/campaigns/%s/' % (self.api_key,)
+        if campaign_name is not None:
+            path = '%s%s/' % (path, campaign_name)
         try:
             conn = httplib.HTTPConnection('www.kontagent.com')
-            conn.request('GET', path)
-            response = conn.getresponse().read()
-        except (socket.error, httplib.HTTPException, ValueError):
-            raise KontagentError('Error in sending request')
-        try:
-            decoded = simplejson.loads(response)
-        except ValueError:
-            raise KontagentError('Unable to decode response')
-        sig = []
-        for key in sorted(decoded.keys()):
-            if key == 'sig':
-                continue
-            sig.extend((key, '=', simplejson.dumps(decoded[key].replace(' ', ''))))
-        sig = hashlib.md5(''.join(sig) + self.secret_key).hexdigest()
-        if sig != decoded['sig']:
-            raise KontagentError('Kontagent response fails checksum validation')
-        return decoded
-    
-    def get_campaign(self, campaign_name):
-        ts = str(time.time() * 1e6)
-        kt_sig = hashlib.md5('AB_TEST' + ts + self.secret_key).hexdigest()
-        qs = urllib.urlencode({'ts': ts, 'kt_sig': kt_sig})
-        path = '/abtest/campaigns/%s/%s/?%s' % (self.api_key, campaign_name, qs)
-        try:
-            conn = httplib.HTTPConnection('www.kontagent.com')
-            conn.request('GET', path)
+            conn.request('GET', path + '?' + qs)
             response = conn.getresponse().read()
         except (socket.error, httplib.HTTPException, ValueError):
             raise KontagentError('Error in sending request')
