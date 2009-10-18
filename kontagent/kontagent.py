@@ -122,6 +122,17 @@ class Kontagent(object):
     def page_request(self, sender_uid, ip_address=None, page_address=None):
         return self._request('pgr', locals())
     
+    def get_page_request_image_src(self, sender_uid, timestamp=None):
+        path = self._get_path('pgr')
+        if self.port:
+            return 'http://%s:%s%s?s=%s&ts=%s' % (
+                self.domain, self.port, path, sender_uid, self._get_ts()
+            )
+        else:
+            return 'http://%s%s?s=%s&ts=%s' % (
+                self.domain, path, sender_uid, self._get_ts()
+            )
+    
     def user_information(self, sender_uid, birth_year=None, gender=None,
                          city=None, country=None, state=None, postal=None,
                          friend_count=None):
@@ -192,7 +203,7 @@ class Kontagent(object):
                 val = str(val)
             data[VAR_MAP.get(key, key)] = val
         # Now we add a timestamp
-        data['ts'] = str(time.time() * 1e6)
+        data['ts'] = self._get_ts()
         # Finally we build up a signature and sign it
         sig = []
         for key in sorted(data.keys()):
@@ -201,6 +212,9 @@ class Kontagent(object):
         data['an_sig'] = hashlib.md5(''.join(sig)).hexdigest()
         # URL-Encode the parameters and return the value
         return urllib.urlencode(data)
+    
+    def _get_ts(self):
+        return str(time.time() * 1e6)
     
     def _get_path(self, msg_type):
         return '/api/v1/%s/%s/' % (self.api_key, msg_type)
