@@ -33,7 +33,7 @@ A full list of all of the methods available is:
 You should consult with the Kontagent REST Server API to see what each of these
 functions does.  You can find that here:
 
-http://support.kontagent.com/reference/api-documentation/facebook-rest-server-api
+http://developers.kontagent.com/reference/api-documentation/facebook-rest-server-api
 
 Unfortunately, for right now you're going to have to UTSL to find out about the
 parameters that each method takes.
