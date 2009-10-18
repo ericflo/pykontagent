@@ -48,10 +48,16 @@ class KontagentError(Exception):
     pass
 
 class Kontagent(object):
-    def __init__(self, api_key, secret_key, test=False):
+    def __init__(self, api_key, secret_key, test=False, domain=None, port=80):
         self.api_key = api_key
         self.secret_key = secret_key
         self.test = test
+        self.port = port
+        if domain:
+            self.domain = domain
+        else:
+            domain_part = 'test' if self.test else 'geo'
+            self.domain = 'api.%s.kontagent.net'  % (domain_part,)
     
     def invite_sent(self, sender_uid, recipient_uids, template_id=None,
                     tracking_tag=None, subtype_1=None, subtype_2=None):
@@ -159,12 +165,8 @@ class Kontagent(object):
     def _request(self, msg_type, data):
         path = self._get_path(msg_type)
         qs = self._get_qs(data)
-        if self.test:
-            domain = 'api.test.kontagent.net'
-        else:
-            domain = 'api.geo.kontagent.net'
         try:
-            conn = httplib.HTTPConnection(domain)
+            conn = httplib.HTTPConnection(self.domain, self.port)
             conn.request('GET', path + '?' + qs)
             response = conn.getresponse().read()
         except (socket.error, httplib.HTTPException, ValueError):
