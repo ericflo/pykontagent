@@ -112,7 +112,7 @@ class Kontagent(object):
         return self._request('apa', locals())
     
     def application_removed(self, uid):
-        return self._request('psr', {'s': uid})
+        return self._request('apr', {'s': uid})
     
     def undirected_communication_click(self, sender_uid, channel_type,
                                        installed, subtype_1=None,
