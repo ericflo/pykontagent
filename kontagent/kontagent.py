@@ -180,6 +180,23 @@ class Kontagent(object):
             raise KontagentError('Kontagent response fails checksum validation')
         return decoded
     
+    def raw_request(self, msg_type, data):
+        path = self._get_path(msg_type)
+        data['ts'] = self._get_ts()
+        sig = []
+        for key in sorted(data.keys()):
+            sig.extend((key, '=', data.get(key).replace(' ', '')))
+        sig.append(self.secret_key)
+        data['an_sig'] = hashlib.md5(''.join(sig)).hexdigest()
+        qs = urllib.urlencode(data)
+        try:
+            conn = httplib.HTTPConnection(self.domain, self.port)
+            conn.request('GET', path + '?' + qs)
+            response = conn.getresponse().read()
+        except (socket.error, httplib.HTTPException, ValueError):
+            raise KontagentError('Error in sending request')
+        return response
+    
     def _request(self, msg_type, data):
         path = self._get_path(msg_type)
         qs = self._get_qs(data)
