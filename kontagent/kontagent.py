@@ -1,5 +1,6 @@
 import hashlib
 import httplib
+import random
 import socket
 import time
 import urllib
@@ -59,6 +60,12 @@ class Kontagent(object):
             domain_part = 'test' if self.test else 'geo'
             self.domain = 'api.%s.kontagent.net'  % (domain_part,)
     
+    def get_tag(self):
+        return '%X' % (random.getrandbits(64),)
+
+    def get_short_tag(self):
+        return '%X' % (random.getrandbits(32),)
+
     def invite_sent(self, sender_uid, recipient_uids, template_id=None,
                     tracking_tag=None, subtype_1=None, subtype_2=None):
         return self._request('ins', locals())
