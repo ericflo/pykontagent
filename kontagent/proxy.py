@@ -1,5 +1,6 @@
-import sys
 import urllib
+
+from optparse import OptionParser
 
 from twisted.web import client
 from twisted.web.server import Site
@@ -9,6 +10,7 @@ from twisted.internet.task import deferLater
 from twisted.internet import reactor
 
 from twisted.python import log
+from twisted.python.logfile import DailyLogFile
 
 class KontagentProxyResource(Resource):
     isLeaf = True
@@ -36,8 +38,21 @@ class KontagentProxyResource(Resource):
         return 'ok'
 
 if __name__ == '__main__':
+    parser = OptionParser()
+    parser.add_option('-f', '--file', dest='filename', default='log.txt',
+        help='log data to to FILE', metavar='FILE')
+    parser.add_option('-d', '--dir', dest='directory', default='.',
+        help='store log files in DIRECTORY', metavar='DIRECTORY')
+    parser.add_option('-p', '--port', dest='port', default=8880,
+        help='listen on port PORT', metavar='PORT')
+    (options, args) = parser.parse_args()
     root = KontagentProxyResource()
     factory = Site(root)
-    log.startLogging(sys.stdout)
-    reactor.listenTCP(8880, factory)
+    print 'Proxying Kontagent requests on port %s' % (options.port,)
+    print 'Logging Kontagent requests to file %s in directory %s' % (
+        options.filename, options.directory
+    )
+    log_file = DailyLogFile(options.filename, options.directory)
+    log.startLogging(log_file, setStdout=False)
+    reactor.listenTCP(int(options.port), factory)
     reactor.run()

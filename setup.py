@@ -1,6 +1,6 @@
 from setuptools import setup, find_packages
  
-version = '0.1'
+version = '0.2'
 
 LONG_DESCRIPTION = """
 This is a very minimal API into Kontagent, written using purely modules from
