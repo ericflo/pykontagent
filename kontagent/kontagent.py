@@ -154,7 +154,7 @@ class Kontagent(object):
         return self._request('mtu', locals())
     
     def get_campaigns(self, campaign_name=None):
-        ts = str(time.time() * 1e6)
+        ts = str(int(time.time() * 1e6))
         kt_sig = hashlib.md5('AB_TEST' + ts + self.secret_key).hexdigest()
         qs = urllib.urlencode({'ts': ts, 'kt_sig': kt_sig})
         path = '/abtest/campaigns/%s/' % (self.api_key,)
@@ -238,7 +238,7 @@ class Kontagent(object):
         return urllib.urlencode(data)
     
     def _get_ts(self):
-        return str(time.time() * 1e6)
+        return str(int(time.time() * 1e6))
     
     def _get_path(self, msg_type):
         return '/api/v1/%s/%s/' % (self.api_key, msg_type)
