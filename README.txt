@@ -1,9 +1,6 @@
 This is a very minimal API into Kontagent, written using purely modules from
 the Python standard library.
 
-I haven't put it into production yet, but plan to in the near future (at which
-point I will change this notice to say that I am using it in production).
-
 Here's how you might use it:
 
     from kontagent import Kontagent
@@ -11,6 +8,7 @@ Here's how you might use it:
     k = Kontagent('MY_API_KEY', 'MY_SECRET_KEY')
     k.invite_sent(16904779, [542469672], tracking_tag='testtag')
 
+This is now being used in production for http://radiosox.com/
 
 A full list of all of the methods available is:
 
