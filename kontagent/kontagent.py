@@ -36,6 +36,7 @@ VAR_MAP = {
     'friend_count': 'f',
     'goal_count_id': 'gcn',
     'value': 'v',
+    'installed': 'i',
 }
 
 CHANNEL_TYPES = (
