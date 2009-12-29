@@ -27,6 +27,7 @@ A full list of all of the methods available is:
  * user_information
  * goal_counts
  * revenue_tracking
+ * raw_request
 
 You should consult with the Kontagent REST Server API to see what each of these
 functions does.  You can find that here:
