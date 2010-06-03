@@ -56,8 +56,10 @@ class Kontagent(object):
         if domain:
             self.domain = domain
         else:
-            domain_part = 'test' if self.test else 'geo'
-            self.domain = 'api.%s.kontagent.net'  % (domain_part,)
+            if self.test:
+                self.domain = 'test-server.kontagent.com'
+            else:
+                self.domain = 'api.geo.kontagent.net'
     
     def invite_sent(self, sender_uid, recipient_uids, template_id=None,
                     tracking_tag=None, subtype_1=None, subtype_2=None):
